@@ -208,7 +208,7 @@ const Agent = ({
       )}
 
       {/* Call / End Buttons */}
-      <div className="w-full flex justify-center">
+      <div className="w-full flex justify-center mt-8">
         {callStatus !== "ACTIVE" ? (
           <button className="relative btn-call" onClick={() => handleCall()}>
             {/* Pulsing animation while connecting */}
