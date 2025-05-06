@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import React from "react";
 import Cursor from "@/components/Cursor";
 import PageWrapper from "@/components/PageWrapper";
@@ -95,6 +96,3 @@ async function Home() {
 }
 
 export default Home;
-
-
-// 3:07:02
