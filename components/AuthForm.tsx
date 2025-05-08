@@ -152,7 +152,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
                 control={form.control}
                 name="password"
                 label="Password"
-                placeholder="Enter your password (min 3 char.)"
+                placeholder="Enter your password (min 6 char.)"
                 type={showPassword ? "text" : "password"}
               />
               <div

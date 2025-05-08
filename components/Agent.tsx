@@ -1,15 +1,14 @@
-"use client"; // This is a client-side component in Next.js
+"use client";
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-import { cn } from "@/lib/utils"; // Utility function to handle conditional classNames
-import { vapi } from "@/lib/vapi.sdk"; // Vapi SDK for handling voice/video calls
-import { interviewer } from "@/constants"; // Interviewer config
-import { createFeedback } from "@/lib/actions/general.action"; // API to save feedback
+import { cn } from "@/lib/utils";
+import { vapi } from "@/lib/vapi.sdk";
+import { interviewer } from "@/constants";
+import { createFeedback } from "@/lib/actions/general.action";
 
-// Define call status options
 enum CallStatus {
   INACTIVE = "INACTIVE",
   CONNECTING = "CONNECTING",
@@ -17,13 +16,11 @@ enum CallStatus {
   FINISHED = "FINISHED",
 }
 
-// Type for saved message in the transcript
 interface SavedMessage {
   role: "user" | "system" | "assistant";
   content: string;
 }
 
-// Main Agent component
 const Agent = ({
   userName,
   userId,
@@ -33,23 +30,19 @@ const Agent = ({
   questions,
 }: AgentProps) => {
   const router = useRouter();
-
-  // State to track the current call status
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
-
-  // Store the transcripted messages
   const [messages, setMessages] = useState<SavedMessage[]>([]);
-
-  // Track if the AI is speaking (to animate avatar)
   const [isSpeaking, setIsSpeaking] = useState(false);
-
-  // Last message spoken by AI (for smooth UI updates)
   const [lastMessage, setLastMessage] = useState<string>("");
 
-  // Listen for Vapi events like call start, end, speech, message, etc.
   useEffect(() => {
-    const onCallStart = () => setCallStatus(CallStatus.ACTIVE);
-    const onCallEnd = () => setCallStatus(CallStatus.FINISHED);
+    const onCallStart = () => {
+      setCallStatus(CallStatus.ACTIVE);
+    };
+
+    const onCallEnd = () => {
+      setCallStatus(CallStatus.FINISHED);
+    };
 
     const onMessage = (message: Message) => {
       if (message.type === "transcript" && message.transcriptType === "final") {
@@ -58,14 +51,20 @@ const Agent = ({
       }
     };
 
-    const onSpeechStart = () => setIsSpeaking(true);
-    const onSpeechEnd = () => setIsSpeaking(false);
-
-    const onError = (error: Error) => {
-      console.log("Error:", error); // Log any SDK error
+    const onSpeechStart = () => {
+      console.log("speech start");
+      setIsSpeaking(true);
     };
 
-    // Attach event listeners to Vapi
+    const onSpeechEnd = () => {
+      console.log("speech end");
+      setIsSpeaking(false);
+    };
+
+    const onError = (error: Error) => {
+      console.log("Error:", error);
+    };
+
     vapi.on("call-start", onCallStart);
     vapi.on("call-end", onCallEnd);
     vapi.on("message", onMessage);
@@ -73,7 +72,6 @@ const Agent = ({
     vapi.on("speech-end", onSpeechEnd);
     vapi.on("error", onError);
 
-    // Cleanup on component unmount
     return () => {
       vapi.off("call-start", onCallStart);
       vapi.off("call-end", onCallEnd);
@@ -84,16 +82,14 @@ const Agent = ({
     };
   }, []);
 
-  // Handle call end and feedback generation
   useEffect(() => {
     if (messages.length > 0) {
-      setLastMessage(messages[messages.length - 1].content); // Show last message
+      setLastMessage(messages[messages.length - 1].content);
     }
 
     const handleGenerateFeedback = async (messages: SavedMessage[]) => {
       console.log("handleGenerateFeedback");
 
-      // Call backend to generate and save feedback
       const { success, feedbackId: id } = await createFeedback({
         interviewId: interviewId!,
         userId: userId!,
@@ -101,7 +97,6 @@ const Agent = ({
         feedbackId,
       });
 
-      // Redirect based on success
       if (success && id) {
         router.push(`/interview/${interviewId}/feedback`);
       } else {
@@ -110,7 +105,6 @@ const Agent = ({
       }
     };
 
-    // If call ends, generate feedback or just redirect
     if (callStatus === CallStatus.FINISHED) {
       if (type === "generate") {
         router.push("/");
@@ -120,12 +114,10 @@ const Agent = ({
     }
   }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
 
-  // Function to start the call
   const handleCall = async () => {
-    setCallStatus(CallStatus.CONNECTING); // Change UI state to connecting
+    setCallStatus(CallStatus.CONNECTING);
 
     if (type === "generate") {
-      // Use default Vapi workflow (AI prompt)
       await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
         variableValues: {
           username: userName,
@@ -133,7 +125,6 @@ const Agent = ({
         },
       });
     } else {
-      // Format questions for the interview
       let formattedQuestions = "";
       if (questions) {
         formattedQuestions = questions
@@ -141,7 +132,6 @@ const Agent = ({
           .join("\n");
       }
 
-      // Start the interview using a predefined interviewer flow
       await vapi.start(interviewer, {
         variableValues: {
           questions: formattedQuestions,
@@ -150,7 +140,6 @@ const Agent = ({
     }
   };
 
-  // Function to end the call manually
   const handleDisconnect = () => {
     setCallStatus(CallStatus.FINISHED);
     vapi.stop();
@@ -158,9 +147,8 @@ const Agent = ({
 
   return (
     <>
-      {/* Main Interview Layout */}
       <div className="call-view">
-        {/* AI Interviewer Avatar Card */}
+        {/* AI Interviewer Card */}
         <div className="card-interviewer">
           <div className="avatar">
             <Image
@@ -190,7 +178,6 @@ const Agent = ({
         </div>
       </div>
 
-      {/* Display last transcripted message */}
       {messages.length > 0 && (
         <div className="transcript-border">
           <div className="transcript">
@@ -207,17 +194,16 @@ const Agent = ({
         </div>
       )}
 
-      {/* Call / End Buttons */}
       <div className="w-full flex justify-center mt-8">
         {callStatus !== "ACTIVE" ? (
           <button className="relative btn-call" onClick={() => handleCall()}>
-            {/* Pulsing animation while connecting */}
             <span
               className={cn(
                 "absolute animate-ping rounded-full opacity-75",
                 callStatus !== "CONNECTING" && "hidden"
               )}
             />
+
             <span className="relative">
               {callStatus === "INACTIVE" || callStatus === "FINISHED"
                 ? "Call"

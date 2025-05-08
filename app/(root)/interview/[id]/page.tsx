@@ -15,13 +15,14 @@ const InterviewDetails = async ({ params }: RouteParams) => {
   const { id } = await params;
 
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+
   const interview = await getInterviewById(id);
   if (!interview) redirect("/");
 
   const feedback = await getFeedbackByInterviewId({
     interviewId: id,
-    userId: user?.id,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+    userId: user?.id!,
   });
 
   return (
@@ -48,7 +49,8 @@ const InterviewDetails = async ({ params }: RouteParams) => {
       </div>
 
       <Agent
-        userName={user?.name}
+        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+        userName={user?.name!}
         userId={user?.id}
         interviewId={id}
         type="interview"

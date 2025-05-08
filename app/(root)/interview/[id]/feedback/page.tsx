@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
+
 import {
   getFeedbackByInterviewId,
   getInterviewById,
@@ -12,16 +13,16 @@ import { getCurrentUser } from "@/lib/actions/auth.action";
 const Feedback = async ({ params }: RouteParams) => {
   const { id } = await params;
   const user = await getCurrentUser();
-  if (!user) redirect("/"); // Or throw an error
+
   const interview = await getInterviewById(id);
   if (!interview) redirect("/");
 
   const feedback = await getFeedbackByInterviewId({
     interviewId: id,
-    userId: user.id!,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+    userId: user?.id!,
   });
 
-// userId: user?.id!
   return (
     <section className="section-feedback">
       <div className="flex flex-row justify-center">

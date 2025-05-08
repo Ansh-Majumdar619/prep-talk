@@ -1,50 +1,22 @@
+/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import Agent from "@/components/Agent";
-import React from "react";
-import {getCurrentUser} from "@/lib/actions/auth.action";
-
-
-
+import { getCurrentUser } from "@/lib/actions/auth.action";
 
 const Page = async () => {
-
-const user = await getCurrentUser();
-
-
-
+  const user = await getCurrentUser();
 
   return (
     <>
-      <div>
-        <h3 className="mb-5" >Interview Generation</h3>
-        <Agent userName={user?.name} userId={user?.id} type="generate" />
-      </div>
+      <h3>Interview generation</h3>
+
+      <Agent
+        userName={user?.name!}
+        userId={user?.id}
+        profileImage={user?.profileURL}
+        type="generate"
+      />
     </>
   );
 };
 
 export default Page;
-
-
-
-
-// import Agent from "@/components/Agent";
-// import { getCurrentUser } from "@/lib/actions/auth.action";
-
-// const Page = async () => {
-//   const user = await getCurrentUser();
-
-//   return (
-//     <>
-//       <h3>Interview generation</h3>
-
-//       <Agent
-//         userName={user?.name!}
-//         userId={user?.id}
-//         profileImage={user?.profileURL}
-//         type="generate"
-//       />
-//     </>
-//   );
-// };
-
-// export default Page;
